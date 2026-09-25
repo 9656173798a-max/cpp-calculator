@@ -17,50 +17,45 @@ bool RunCalculatorCycle() {
     std::string command;
     Number memory_value = 0;
     bool is_memory_set = false;
-    Number current_value;
+    Number current_value = 0;
 
     if (!ReadNumber(current_value)) {
         return false;
     }
 
+    Number operand = 0;
     while (std::cin >> command) {
         if (command == "+") {
-            Number operand;
             if (!ReadNumber(operand)) {
                 return false;
             }
             current_value += operand;
         }
         else if (command == "-") {
-            Number operand;
             if (!ReadNumber(operand)) {
                 return false;
             }
             current_value -= operand;
         }
         else if (command == "*") {
-            Number operand;
             if (!ReadNumber(operand)) {
                 return false;
             }
             current_value *= operand;
         }
         else if (command == "/") {
-            Number operand;
             if (!ReadNumber(operand)) {
                 return false;
             }
             current_value /= operand;
         }
         else if (command == "**") {
-            Number operand;
             if (!ReadNumber(operand)) {
                 return false;
             }
-            current_value = pow(current_value, operand);
+            current_value = std::pow(current_value, operand);
         }
         else if (command == ":") {
-            Number operand;
             if (!ReadNumber(operand)) {
                 return false;
             }
