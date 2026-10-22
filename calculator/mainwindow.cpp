@@ -76,7 +76,13 @@ void MainWindow::on_tb_reset_clicked() {
 }
 
 void MainWindow::on_tb_negate_clicked() {
-    if (input_number_.startsWith("-")) {
+    if (input_number_.isEmpty()) {
+        // На экране не вводимое число, а результат или значение из памяти.
+        // Меняем знак у active_number_. Запись 0 - x, в отличие от -x,
+        // не превращает ноль в отрицательный ноль.
+        active_number_ = 0 - active_number_;
+        ui->l_result->setText(QString::number(active_number_));
+    } else if (input_number_.startsWith("-")) {
         SetText(input_number_.mid(1));
     } else {
         SetText("-" + input_number_);
@@ -183,16 +189,24 @@ void MainWindow::on_tb_zero_clicked() {
 }
 
 void MainWindow::on_tb_backspace_clicked() {
-    if (!input_number_.isEmpty()) {
-        input_number_.chop(1);
-        SetText(input_number_);
+    if (input_number_.isEmpty()) {
+        return;
     }
+    input_number_.chop(1);
+    if (input_number_ == "-") {
+        input_number_.clear();
+    }
+    SetText(input_number_);
 }
 
 void MainWindow::SetText(const QString& text) {
     input_number_ = NormalizeNumber(text);
     ui->l_result->setText(input_number_);
     active_number_ = input_number_.toDouble();
+    if (active_number_ == 0) {
+        // Строка "-0" даёт отрицательный ноль, а в формуле он выглядел бы как "-0".
+        active_number_ = 0;
+    }
 }
 
 void MainWindow::AddText(const QString& suffix) {
@@ -231,8 +245,6 @@ QString MainWindow::OpToString(Operation op) const {
     }
     return "";
 }
-
-
 
 
 
