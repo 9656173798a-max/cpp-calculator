@@ -1,0 +1,6 @@
+.qtcreator/
+*.pro.user
+*.pro.user.*
+build/
+.idea/
+.DS_Store
