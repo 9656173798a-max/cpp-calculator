@@ -17,12 +17,14 @@ QString NormalizeNumber(const QString& text) {
         return "0";
     }
     if (text.startsWith('.')) {
-        // Рекурсивный вызов.
         return NormalizeNumber("0" + text);
     }
     if (text.startsWith('-')) {
-        // Рекурсивный вызов.
-        return "-" + NormalizeNumber(text.mid(1));
+        QString rest = NormalizeNumber(text.mid(1));
+        if (rest == "0") {
+            return "0";
+        }
+        return "-" + rest;
     }
     if (text.startsWith('0') && !text.startsWith("0.")) {
         return NormalizeNumber(RemoveTrailingZeroes(text));
@@ -30,7 +32,7 @@ QString NormalizeNumber(const QString& text) {
     return text;
 }
 
-}  // namespace
+}
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -53,6 +55,9 @@ void MainWindow::on_tb_mc_clicked() {
 void MainWindow::on_tb_mr_clicked() {
     if (!has_memory_) {
         return;
+    }
+    if (current_operation_ == Operation::NO_OPERATION) {
+        ui->l_formula->setText("");
     }
     active_number_ = memory_value_;
     ui->l_result->setText(QString::number(active_number_));
@@ -77,9 +82,6 @@ void MainWindow::on_tb_reset_clicked() {
 
 void MainWindow::on_tb_negate_clicked() {
     if (input_number_.isEmpty()) {
-        // На экране не вводимое число, а результат или значение из памяти.
-        // Меняем знак у active_number_. Запись 0 - x, в отличие от -x,
-        // не превращает ноль в отрицательный ноль.
         active_number_ = 0 - active_number_;
         ui->l_result->setText(QString::number(active_number_));
     } else if (input_number_.startsWith("-")) {
@@ -204,20 +206,27 @@ void MainWindow::SetText(const QString& text) {
     ui->l_result->setText(input_number_);
     active_number_ = input_number_.toDouble();
     if (active_number_ == 0) {
-        // Строка "-0" даёт отрицательный ноль, а в формуле он выглядел бы как "-0".
         active_number_ = 0;
     }
 }
 
 void MainWindow::AddText(const QString& suffix) {
+    if (current_operation_ == Operation::NO_OPERATION) {
+        ui->l_formula->setText("");
+    }
     input_number_ += suffix;
     SetText(input_number_);
 }
 
 void MainWindow::SetOperation(Operation op) {
-    if (current_operation_ == Operation::NO_OPERATION) {
-        calculator_.Set(active_number_);
+    if (current_operation_ != Operation::NO_OPERATION) {
+        current_operation_ = op;
+        ui->l_formula->setText(QString("%1 %2")
+                                   .arg(QString::number(calculator_.GetNumber()))
+                                   .arg(OpToString(current_operation_)));
+        return;
     }
+    calculator_.Set(active_number_);
     current_operation_ = op;
 
     QString formula = QString("%1 %2")
@@ -245,18 +254,3 @@ QString MainWindow::OpToString(Operation op) const {
     }
     return "";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
